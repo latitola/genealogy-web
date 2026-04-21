@@ -578,7 +578,7 @@ var relationships = [
             var savedRels = localStorage.getItem('genealogy_relationships');
             if (savedRels) relationships = JSON.parse(savedRels);
             renderPersonList();
-            renderTree();
+            try { renderTree(); } catch(e) { console.error('renderTree error:', e.message); }
             console.log('界面已渲染, 当前:', persons.length, '人物');
         }
 
@@ -1074,8 +1074,8 @@ var relationships = [
             for (var i = 0; i < persons.length; i++) {
                 var p = persons[i];
                 if (processed[p.id]) continue;
-                var husbandId = p.gender === 'male' ? p.id : (spouses[p.id] ? spouses[p.id][0] : null);
-                var wifeId = p.gender === 'female' ? p.id : (spouses[p.id] ? spouses[p.id][0] : null);
+                var husbandId = p.gender === 'male' ? p.id : (spouses[p.id] && spouses[p.id].length > 0 ? spouses[p.id][0] : null);
+                var wifeId = p.gender === 'female' ? p.id : (spouses[p.id] && spouses[p.id].length > 0 ? spouses[p.id][0] : null);
                 var children = [];
                 if (husbandId && childrenMap[husbandId]) children = children.concat(childrenMap[husbandId]);
                 if (wifeId && childrenMap[wifeId]) {
@@ -1148,6 +1148,7 @@ var relationships = [
                     var childLeft = center - childTotalSW / 2;
                     for (var i = 0; i < f.childFamilies.length; i++) {
                         var cfi = f.childFamilies[i];
+                        if (cfi === undefined || cfi >= families.length || !families[cfi]) continue;
                         var cfsw = calcSW(cfi);
                         families[cfi].y = f.y + levelH;
                         layout(cfi, childLeft, childLeft + cfsw);
@@ -1164,7 +1165,7 @@ var relationships = [
                 if (f.childFamilies.length > 0 && !collapsedFamilies[fi]) {
                     for (var ci = 0; ci < f.childFamilies.length; ci++) {
                         var cfi = f.childFamilies[ci];
-                        if (families[cfi].y === 0) {
+                        if (cfi !== undefined && cfi < families.length && families[cfi] && families[cfi].y === 0) {
                             families[cfi].y = f.y + levelH;
                             queue.push(cfi);
                         }
@@ -1182,7 +1183,7 @@ var relationships = [
                 if (!collapsedFamilies[fi]) {
                     for (var ci = 0; ci < families[fi].childFamilies.length; ci++) {
                         var cfi = families[fi].childFamilies[ci];
-                        if (personGen[cfi] === undefined) {
+                        if (cfi !== undefined && cfi < families.length && personGen[cfi] === undefined) {
                             personGen[cfi] = personGen[fi] + 1;
                             genQueue.push(cfi);
                         }
