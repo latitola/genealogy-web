@@ -573,8 +573,10 @@ var relationships = [
 
         function loadFromServer() {
             console.log('开始加载本地数据...');
-            persons = JSON.parse(localStorage.getItem('genealogy_persons') || '[]');
-            relationships = JSON.parse(localStorage.getItem('genealogy_relationships') || '[]');
+            var savedPersons = localStorage.getItem('genealogy_persons');
+            if (savedPersons) persons = JSON.parse(savedPersons);
+            var savedRels = localStorage.getItem('genealogy_relationships');
+            if (savedRels) relationships = JSON.parse(savedRels);
             renderPersonList();
             renderTree();
             console.log('界面已渲染, 当前:', persons.length, '人物');
